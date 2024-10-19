@@ -1,0 +1,29 @@
+{
+  "block.forkcart.track_ties": "Track Ties",
+  "block.forkcart.invisible_ties": "Invisible Ties",
+  "item.forkcart.track": "Track",
+  "item.forkcart.chain_track": "Chain Track",
+  "item.forkcart.frictionless_track": "Frictionless Track",
+  "item.forkcart.antigravity_track": "Antigravity Track",
+  "item.forkcart.station_track": "[WIP] Station Track",
+
+  "item.forkcart.track_ties.desc": "Interact to rotate when placed",
+  "item.forkcart.invisible_ties.desc": "Interact to rotate when placed (Invisible unless holding item)",
+  "item.forkcart.track.standard.desc": "Links two Track Ties blocks together",
+  "item.forkcart.track.chain.desc": "Links two Track Ties blocks together and pulls carts along",
+  "item.forkcart.track.frictionless.desc": "Links two Track Ties blocks together and has no friction",
+  "item.forkcart.track.antigravity.desc": "Links two Track Ties blocks together, has less friction, and defies gravity when going up",
+  "item.forkcart.track.station.desc": "Links two Track Ties blocks together and holds carts until the first tie is powered",
+
+  "item.forkcart.track.origin": "First track selected",
+  "item.forkcart.track.clear_hint": "Cancel first selection by using on a non-track block",
+
+  "entity.forkcart.track_follower": "Track Follower",
+
+  "forkcart.config.query_value": "Option '%s' is currently '%s'.",
+  "forkcart.config.set_value": "Option '%s' has been set to '%s'.",
+
+  "forkcart.config.forkcart_client.rotate_camera.desc": "Recommended to be set to 'false' for users prone to motion sickness. When set to 'false', your player camera orientation will remain level while riding a non-level Forkcart track. Non-level tracks are best experienced in third person when 'rotate_camera' is set to 'false'.",
+  "forkcart.config.forkcart_client.track_resolution.desc": "Higher values decrease performance and increase visual quality. Determines how many segments tracks will be cut into when rendering, with fewer segments making tracks appear jagged. Does not affect minecart movement along tracks.",
+  "forkcart.config.forkcart_client.track_render_distance.desc": "When the origin track tie block is this many chunks away from you, its track will stop rendering."
+}

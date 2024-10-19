@@ -1,0 +1,7 @@
+{
+  "entity.track_follower.lift": {
+    "sounds": [
+      "forkcart:cart_lift"
+    ]
+  }
+}

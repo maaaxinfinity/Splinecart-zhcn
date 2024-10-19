@@ -1,31 +1,32 @@
 {
 	"schemaVersion": 1,
-	"id": "splinecart",
+	"id": "forkcart",
 	"version": "${version}",
-	"name": "Splinecart",
-	"description": "Minecart tracks that curve",
+	"name": "Forkcart",
+	"description": "Minecart tracks that curve - forked and modified by ImplicitSaber",
 	"authors": [
-		"FoundationGames"
+		"FoundationGames",
+		"ImplicitSaber"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "MIT",
-	"icon": "assets/splinecart/icon.png",
+	"icon": "assets/forkcart/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"io.github.foundationgames.splinecart.Splinecart"
+			"io.github.implicitsaber.forkcart.Forkcart"
 		],
 		"client": [
-			"io.github.foundationgames.splinecart.SplinecartClient"
+			"io.github.implicitsaber.forkcart.ForkcartClient"
 		]
 	},
 	"mixins": [
-		"splinecart.mixins.json",
+		"forkcart.mixins.json",
 		{
-			"config": "splinecart.client.mixins.json",
+			"config": "forkcart.client.mixins.json",
 			"environment": "client"
 		}
 	],
