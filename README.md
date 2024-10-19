@@ -1,7 +1,7 @@
 # Forkcart
-A fork of the Splinecart mod by FoundationGames. This fork was created to add new features to the mod and to port it to more versions.
+A fork of the Splinecart mod, which was developed by FoundationGames. This fork was created to add new features to the mod and to port it to more versions.
 ## License
-This mod is licensed under the MIT license. This mod is based on Splinecart, also licensed under the MIT license:
+This mod is licensed under the MIT license. This mod is a fork of Splinecart, also licensed under the MIT license:
 ```
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
