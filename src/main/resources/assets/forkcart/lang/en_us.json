@@ -5,7 +5,7 @@
   "item.forkcart.chain_track": "Chain Track",
   "item.forkcart.frictionless_track": "Frictionless Track",
   "item.forkcart.antigravity_track": "Antigravity Track",
-  "item.forkcart.station_track": "[WIP] Station Track",
+  "item.forkcart.station_track": "Station Track",
 
   "item.forkcart.track_ties.desc": "Interact to rotate when placed",
   "item.forkcart.invisible_ties.desc": "Interact to rotate when placed (Invisible unless holding item)",

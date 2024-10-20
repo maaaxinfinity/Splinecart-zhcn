@@ -220,22 +220,24 @@ public class TrackFollowerEntity extends Entity {
                         Math.max(this.trackVelocity, MAX_ENERGY));
 
                 this.dataTracker.set(CHAIN_LIFTING, trackType == TrackItem.Type.CHAIN);
-                if(trackType != TrackItem.Type.CHAIN) {
-                    if (this.trackVelocity > COMFORTABLE_SPEED && trackType != TrackItem.Type.FRICTIONLESS) {
-                        double diff = this.trackVelocity - COMFORTABLE_SPEED;
-                        diff *= FRICTION;
-                        this.trackVelocity = COMFORTABLE_SPEED + diff;
-                    } else if(trackType != TrackItem.Type.ANTIGRAVITY) {
-                        if(trackType != TrackItem.Type.FRICTIONLESS) this.trackVelocity *= MILD_FRICTION;
-                        Vector3d rPos = new Vector3d();
-                        Vector3d rGrad = new Vector3d();
-                        startE.pose().interpolate(startE.pose(), 1 - this.splinePieceProgress, rPos, this.basis, rGrad);
-                        double rGravity = (getY() - rPos.y()) * 0.047;
-                        this.trackVelocity -= rGravity;
-                        if (this.trackVelocity < 0) this.trackVelocity = 0;
+                switch(trackType) {
+                    case CHAIN -> this.trackVelocity = 0.05;
+                    case STATION -> this.trackVelocity = world.getReceivedRedstonePower(startTie) > 0 ? 0.05 : 0;
+                    default -> {
+                        if (this.trackVelocity > COMFORTABLE_SPEED && trackType != TrackItem.Type.FRICTIONLESS) {
+                            double diff = this.trackVelocity - COMFORTABLE_SPEED;
+                            diff *= FRICTION;
+                            this.trackVelocity = COMFORTABLE_SPEED + diff;
+                        } else if(trackType != TrackItem.Type.ANTIGRAVITY) {
+                            if(trackType != TrackItem.Type.FRICTIONLESS) this.trackVelocity *= MILD_FRICTION;
+                            Vector3d rPos = new Vector3d();
+                            Vector3d rGrad = new Vector3d();
+                            startE.pose().interpolate(startE.pose(), 1 - this.splinePieceProgress, rPos, this.basis, rGrad);
+                            double rGravity = (getY() - rPos.y()) * 0.047;
+                            this.trackVelocity -= rGravity;
+                            if (this.trackVelocity < 0) this.trackVelocity = 0;
+                        }
                     }
-                } else {
-                    this.trackVelocity = 0.05;
                 }
             }
         } else {
