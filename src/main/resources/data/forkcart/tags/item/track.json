@@ -2,6 +2,7 @@
   "values": [
     "forkcart:track",
     "forkcart:chain_track",
-    "forkcart:station_track"
+    "forkcart:station_track",
+    "forkcart:brake_track"
   ]
 }

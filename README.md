@@ -20,8 +20,10 @@ This is a basic tutorial on using the mod. If you already know how to use the or
 ### New Features
 - Chain Track can be used as a replacement for regular track to connect two track ties. It will pull carts along the track segment.
 - Station Track will pull carts along the track segment if and only if the first tie of the segment is powered.
+- Brake Track will smoothly slow carts down if not powered.
 - Invisible Ties are invisible when placed unless the item is held.
 - Switch Ties will push a cart off onto a rail to the right if powered. Otherwise they let it continue to the next segment.
+- Shuttle Ties will reverse a cart if not powered.
 ## License
 This mod is licensed under the MIT license. This mod is a fork of Splinecart, also licensed under the MIT license:
 ```

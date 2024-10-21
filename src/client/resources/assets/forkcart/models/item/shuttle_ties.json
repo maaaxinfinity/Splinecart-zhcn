@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "forkcart:block/shuttle_ties_on"
+  }
+}

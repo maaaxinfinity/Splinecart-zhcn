@@ -70,6 +70,7 @@ public class TrackTiesBlockEntity extends BlockEntity {
             case STANDARD -> Forkcart.TRACK;
             case CHAIN -> Forkcart.CHAIN_TRACK;
             case STATION -> Forkcart.STATION_TRACK;
+            case BRAKE -> Forkcart.BRAKE_TRACK;
         }));
 
         world.spawnEntity(item);
