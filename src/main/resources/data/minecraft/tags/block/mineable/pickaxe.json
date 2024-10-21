@@ -1,5 +1,8 @@
 {
   "values": [
-    "forkcart:track_ties"
+    "forkcart:track_ties",
+    "forkcart:switch_ties",
+    "forkcart:invisible_ties",
+    "forkcart:shuttle_ties"
   ]
 }

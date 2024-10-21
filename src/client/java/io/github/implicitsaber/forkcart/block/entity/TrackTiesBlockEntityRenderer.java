@@ -24,9 +24,8 @@ import org.joml.Vector3f;
 public class TrackTiesBlockEntityRenderer implements BlockEntityRenderer<TrackTiesBlockEntity> {
     public static final int WHITE = 0xFFFFFFFF;
     public static final Identifier CHAIN_TRACK_TEXTURE = Forkcart.id("textures/chain_track.png");
-    public static final Identifier ANTIGRAVITY_TRACK_TEXTURE = Forkcart.id("textures/antigravity_track.png");
-    public static final Identifier FRICTIONLESS_TRACK_TEXTURE = Forkcart.id("textures/frictionless_track.png");
     public static final Identifier STATION_TRACK_TEXTURE = Forkcart.id("textures/station_track.png");
+    private static final Identifier BRAKE_TRACK_TEXTURE = Forkcart.id("textures/brake_track.png");
     public static final Identifier TRACK_TEXTURE = Forkcart.id("textures/track.png");
     public static final Identifier POSE_TEXTURE_DEBUG = Forkcart.id("textures/debug.png");
 
@@ -141,6 +140,7 @@ public class TrackTiesBlockEntityRenderer implements BlockEntityRenderer<TrackTi
             case STANDARD -> TRACK_TEXTURE;
             case CHAIN -> CHAIN_TRACK_TEXTURE;
             case STATION -> STATION_TRACK_TEXTURE;
+            case BRAKE -> BRAKE_TRACK_TEXTURE;
         };
     }
 

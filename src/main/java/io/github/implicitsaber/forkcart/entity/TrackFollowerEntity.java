@@ -1,11 +1,13 @@
 package io.github.implicitsaber.forkcart.entity;
 
 import io.github.implicitsaber.forkcart.Forkcart;
+import io.github.implicitsaber.forkcart.block.ShuttleTiesBlock;
 import io.github.implicitsaber.forkcart.block.SwitchTiesBlock;
 import io.github.implicitsaber.forkcart.block.TrackTiesBlockEntity;
 import io.github.implicitsaber.forkcart.item.TrackItem;
 import io.github.implicitsaber.forkcart.util.Pose;
 import io.github.implicitsaber.forkcart.util.SUtil;
+import io.github.implicitsaber.forkcart.util.TrackSnapUtil;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -19,7 +21,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3d;
 import org.joml.Matrix3dc;
 import org.joml.Quaternionf;
@@ -36,6 +37,7 @@ public class TrackFollowerEntity extends Entity {
     private double splinePieceProgress = 0; // t
     private double motionScale; // t-distance per block
     private double trackVelocity;
+    private boolean reversed = false;
 
     private final Vector3d serverPosition = new Vector3d();
     private final Vector3d serverVelocity = new Vector3d();
@@ -184,25 +186,45 @@ public class TrackFollowerEntity extends Entity {
                 startE.markHasCart();
 
                 double velocity = Math.min(this.trackVelocity, MAX_SPEED);
-                this.splinePieceProgress += velocity * this.motionScale;
+                this.splinePieceProgress += velocity * this.motionScale * (this.reversed ? -1 : 1);
                 if (this.splinePieceProgress > 1) {
-                    this.splinePieceProgress -= 1;
-
-                    var nextE = endE.next();
-                    if (nextE == null) {
-                        fullDismount(passenger, null);
+                    if(endE.getCachedState().isOf(Forkcart.SHUTTLE_TIES) && endE.getCachedState().get(ShuttleTiesBlock.RUNNING)) {
+                        this.reversed = !reversed;
                         return;
                     } else {
-                        if(endE.getCachedState().isOf(Forkcart.SWITCH_TIES)) {
-                            boolean switched = endE.getCachedState().get(SwitchTiesBlock.SWITCHED);
-                            if(switched) {
-                                fullDismount(passenger, endE.getCachedState());
-                                return;
+                        this.splinePieceProgress -= 1;
+                        var nextE = endE.next();
+                        if (nextE == null) {
+                            fullDismount(passenger, endE.getCachedState(), this.endTie, false);
+                            return;
+                        } else {
+                            if (endE.getCachedState().isOf(Forkcart.SWITCH_TIES)) {
+                                boolean switched = endE.getCachedState().get(SwitchTiesBlock.SWITCHED);
+                                if (switched) {
+                                    fullDismount(passenger, endE.getCachedState(), this.endTie, true);
+                                    return;
+                                }
                             }
+                            this.setStretch(this.endTie, nextE.getPos());
+                            startE = endE;
+                            endE = nextE;
                         }
-                        this.setStretch(this.endTie, nextE.getPos());
-                        startE = endE;
-                        endE = nextE;
+                    }
+                } else if(this.reversed && this.splinePieceProgress < 0) {
+                    if(startE.getCachedState().isOf(Forkcart.SHUTTLE_TIES) && startE.getCachedState().get(ShuttleTiesBlock.RUNNING)) {
+                        this.reversed = !reversed;
+                        return;
+                    } else {
+                        this.splinePieceProgress += 1;
+                        var nextE = startE.prev();
+                        if (nextE == null) {
+                            fullDismount(passenger, startE.getCachedState(), this.startTie, false);
+                            return;
+                        } else {
+                            this.setStretch(nextE.getPos(), this.startTie);
+                            endE = startE;
+                            startE = nextE;
+                        }
                     }
                 }
 
@@ -218,7 +240,7 @@ public class TrackFollowerEntity extends Entity {
                 this.getDataTracker().set(ORIENTATION, this.basis.getNormalizedRotation(new Quaternionf()));
                 this.motionScale = 1 / grad.length();
 
-                double dt = this.trackVelocity * this.motionScale; // Change in spline progress per tick
+                double dt = this.trackVelocity * this.motionScale * (this.reversed ? -1 : 1); // Change in spline progress per tick
                 grad.mul(dt); // Change in position per tick (velocity)
                 this.setVelocity(grad.x(), grad.y(), grad.z());
 
@@ -227,10 +249,24 @@ public class TrackFollowerEntity extends Entity {
                         Math.min(this.trackVelocity, COMFORTABLE_SPEED),
                         Math.max(this.trackVelocity, MAX_ENERGY));
 
-                this.dataTracker.set(CHAIN_LIFTING, trackType == TrackItem.Type.CHAIN);
+                this.dataTracker.set(CHAIN_LIFTING, trackType == TrackItem.Type.CHAIN && !world.isReceivingRedstonePower(startTie));
                 switch(trackType) {
-                    case CHAIN -> this.trackVelocity = 0.05;
-                    case STATION -> this.trackVelocity = world.isReceivingRedstonePower(startTie) ? 0.05 : 0;
+                    case CHAIN -> {
+                        boolean powered = world.isReceivingRedstonePower(startTie);
+                        if(!powered) {
+                            this.trackVelocity = 0.05;
+                            this.reversed = false;
+                        }
+                    }
+                    case STATION -> {
+                        boolean powered = world.isReceivingRedstonePower(startTie);
+                        this.trackVelocity = powered ? 0.05 : 0;
+                        this.reversed = false;
+                    }
+                    case BRAKE -> {
+                        boolean powered = world.isReceivingRedstonePower(startTie);
+                        if(!powered) this.trackVelocity *= 0.9;
+                    }
                     default -> {
                         if (this.trackVelocity > COMFORTABLE_SPEED) {
                             double diff = this.trackVelocity - COMFORTABLE_SPEED;
@@ -247,16 +283,18 @@ public class TrackFollowerEntity extends Entity {
         }
     }
 
-    private void fullDismount(Entity passenger, @Nullable BlockState switchTies) {
+    private void fullDismount(Entity passenger, BlockState ties, BlockPos tiesPos, boolean trackSwitch) {
         passenger.stopRiding();
-        if(switchTies != null) {
-            Vec3i newVel = SwitchTiesBlock.VELOCITY_MAP.getOrDefault(switchTies.get(SwitchTiesBlock.POINTING), Vec3i.ZERO);
+        if(trackSwitch) {
+            Vec3i newVel = SwitchTiesBlock.VELOCITY_MAP.getOrDefault(ties.get(SwitchTiesBlock.POINTING), Vec3i.ZERO);
             passenger.setVelocity(newVel.getX(), newVel.getY(), newVel.getZ());
             Vec3d startPos = passenger.getPos().add(Vec3d.of(newVel));
             passenger.setPos(startPos.x, startPos.y, startPos.z);
         } else {
-            Vector3d newVel = new Vector3d(0, 0, this.trackVelocity).mul(this.basis);
+            Vector3d newVel = new Vector3d(0, 0, this.trackVelocity).mul(this.basis).mul(this.reversed ? -1 : 1);
             passenger.setVelocity(newVel.x(), newVel.y(), newVel.z());
+            BlockPos snapTo = TrackSnapUtil.snapToTrackOnExit(getWorld(), tiesPos, ties, reversed);
+            if(snapTo != null) passenger.setPos(snapTo.getX() + 0.5, snapTo.getY(), snapTo.getZ() + 0.5);
         }
         this.destroy();
     }
@@ -315,6 +353,7 @@ public class TrackFollowerEntity extends Entity {
         this.trackVelocity = nbt.getDouble("track_velocity");
         this.motionScale = nbt.getDouble("motion_scale");
         this.splinePieceProgress = nbt.getDouble("spline_piece_progress");
+        this.reversed = nbt.getBoolean("reversed");
     }
 
     @Override
@@ -328,6 +367,7 @@ public class TrackFollowerEntity extends Entity {
         nbt.putDouble("track_velocity", this.trackVelocity);
         nbt.putDouble("motion_scale", this.motionScale);
         nbt.putDouble("spline_piece_progress", this.splinePieceProgress);
+        nbt.putBoolean("reversed", this.reversed);
     }
 
     public boolean isChainLifting() {

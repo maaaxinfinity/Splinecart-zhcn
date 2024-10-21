@@ -2,18 +2,22 @@
   "block.forkcart.track_ties": "Track Ties",
   "block.forkcart.switch_ties": "Switch Ties",
   "block.forkcart.invisible_ties": "Invisible Ties",
+  "block.forkcart.shuttle_ties": "Shuttle Ties",
   "item.forkcart.track": "Track",
   "item.forkcart.chain_track": "Chain Track",
   "item.forkcart.station_track": "Station Track",
+  "item.forkcart.brake_track": "Brake Track",
 
   "item.forkcart.track_ties.desc": "Interact to rotate when placed",
   "item.forkcart.switch_ties.desc": "Pushes carts off to the right when powered",
   "item.forkcart.invisible_ties.desc": "Invisible unless holding item",
+  "item.forkcart.shuttle_ties.desc": "Reverses carts when not powered",
 
   "item.forkcart.track.desc": "Links two Track Ties blocks together",
   "item.forkcart.track.standard.desc": "Regular track, no modifiers",
-  "item.forkcart.track.chain.desc": "Pulls carts along the segment",
+  "item.forkcart.track.chain.desc": "Pulls carts along the segment if not powered",
   "item.forkcart.track.station.desc": "Holds carts or pushes them depending on if the first tie is powered",
+  "item.forkcart.track.brake.desc": "Slows carts down if not powered",
 
   "item.forkcart.track.origin": "First track selected",
   "item.forkcart.track.clear_hint": "Cancel first selection by using on a non-track block",
@@ -27,5 +31,7 @@
   "forkcart.config.forkcart_client.track_resolution.desc": "Higher values decrease performance and increase visual quality. Determines how many segments tracks will be cut into when rendering, with fewer segments making tracks appear jagged. Does not affect minecart movement along tracks.",
   "forkcart.config.forkcart_client.track_render_distance.desc": "When the origin track tie block is this many chunks away from you, its track will stop rendering.",
 
-  "tag.item.forkcart.track": "Trackx"
+  "tag.item.forkcart.track": "Track",
+
+  "itemGroup.forkcart": "Forkcart"
 }

@@ -91,7 +91,8 @@ public class TrackItem extends Item {
 
         STANDARD,
         CHAIN,
-        STATION
+        STATION,
+        BRAKE
 
     }
 
