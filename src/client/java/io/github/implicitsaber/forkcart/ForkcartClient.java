@@ -34,6 +34,8 @@ public class ForkcartClient implements ClientModInitializer {
 		}
 
 		BlockRenderLayerMap.INSTANCE.putBlock(Forkcart.TRACK_TIES, RenderLayer.getCutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(Forkcart.SWITCH_TIES, RenderLayer.getCutout());
+		BlockRenderLayerMap.INSTANCE.putBlock(Forkcart.INVISIBLE_TIES, RenderLayer.getCutout());
 
 		BlockEntityRendererFactories.register(Forkcart.TRACK_TIES_BE, TrackTiesBlockEntityRenderer::new);
 		EntityRendererRegistry.register(Forkcart.TRACK_FOLLOWER, EmptyEntityRenderer::new);

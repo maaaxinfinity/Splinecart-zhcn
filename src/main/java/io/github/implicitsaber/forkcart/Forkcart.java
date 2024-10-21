@@ -1,5 +1,6 @@
 package io.github.implicitsaber.forkcart;
 
+import io.github.implicitsaber.forkcart.block.SwitchTiesBlock;
 import io.github.implicitsaber.forkcart.block.TrackTiesBlock;
 import io.github.implicitsaber.forkcart.block.TrackTiesBlockEntity;
 import io.github.implicitsaber.forkcart.component.OriginComponent;
@@ -28,6 +29,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,8 @@ public class Forkcart implements ModInitializer {
 
 	public static final TrackTiesBlock TRACK_TIES = Registry.register(Registries.BLOCK, id("track_ties"),
 			new TrackTiesBlock(AbstractBlock.Settings.copy(Blocks.RAIL)));
+	public static final SwitchTiesBlock SWITCH_TIES = Registry.register(Registries.BLOCK, id("switch_ties"),
+			new SwitchTiesBlock(AbstractBlock.Settings.copy(Blocks.RAIL)));
 	public static final TrackTiesBlock INVISIBLE_TIES = Registry.register(Registries.BLOCK, id("invisible_ties"),
 			new TrackTiesBlock(AbstractBlock.Settings.copy(Blocks.RAIL)) {
 				@Override
@@ -46,16 +50,12 @@ public class Forkcart implements ModInitializer {
 				}
 			});
 	public static final BlockEntityType<TrackTiesBlockEntity> TRACK_TIES_BE = Registry.register(Registries.BLOCK_ENTITY_TYPE, id("track_ties"),
-			BlockEntityType.Builder.create(TrackTiesBlockEntity::new, TRACK_TIES, INVISIBLE_TIES).build());
+			BlockEntityType.Builder.create(TrackTiesBlockEntity::new, TRACK_TIES, SWITCH_TIES, INVISIBLE_TIES).build());
 
 	public static final TrackItem TRACK = Registry.register(Registries.ITEM, id("track"),
 			new TrackItem(new Item.Settings(), TrackItem.Type.STANDARD));
 	public static final TrackItem CHAIN_TRACK = Registry.register(Registries.ITEM, id("chain_track"),
 			new TrackItem(new Item.Settings(), TrackItem.Type.CHAIN));
-	public static final TrackItem FRICTIONLESS_TRACK = Registry.register(Registries.ITEM, id("frictionless_track"),
-			new TrackItem(new Item.Settings(), TrackItem.Type.FRICTIONLESS));
-	public static final TrackItem ANTIGRAVITY_TRACK = Registry.register(Registries.ITEM, id("antigravity_track"),
-			new TrackItem(new Item.Settings(), TrackItem.Type.ANTIGRAVITY));
 	public static final TrackItem STATION_TRACK = Registry.register(Registries.ITEM, id("station_track"),
 			new TrackItem(new Item.Settings(), TrackItem.Type.STATION));
 
@@ -76,28 +76,38 @@ public class Forkcart implements ModInitializer {
 	public void onInitialize() {
 		BlockItem tieItem = Registry.register(Registries.ITEM, id("track_ties"),
 				new BlockItem(TRACK_TIES, new Item.Settings()
-						.component(DataComponentTypes.LORE,
-								lore(Text.translatable("item.forkcart.track_ties.desc").formatted(Formatting.GRAY))
+						.component(DataComponentTypes.LORE, lore(
+								Text.translatable("item.forkcart.track_ties.desc").formatted(Formatting.GRAY))
 						)));
+		BlockItem switchTieItem = Registry.register(Registries.ITEM, id("switch_ties"),
+				new BlockItem(SWITCH_TIES, new Item.Settings()
+						.component(DataComponentTypes.LORE, lore(
+								Text.translatable("item.forkcart.track_ties.desc").formatted(Formatting.GRAY),
+								Text.translatable("item.forkcart.switch_ties.desc").formatted(Formatting.GRAY)
+						))));
 		BlockItem invisibleTieItem = Registry.register(Registries.ITEM, id("invisible_ties"),
 				new BlockItem(INVISIBLE_TIES, new Item.Settings()
-						.component(DataComponentTypes.LORE,
-								lore(Text.translatable("item.forkcart.invisible_ties.desc").formatted(Formatting.GRAY))
-						)));
+						.component(DataComponentTypes.LORE, lore(
+								Text.translatable("item.forkcart.track_ties.desc").formatted(Formatting.GRAY),
+								Text.translatable("item.forkcart.invisible_ties.desc").formatted(Formatting.GRAY)
+						))));
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
 			entries.add(tieItem.getDefaultStack());
+			entries.add(switchTieItem.getDefaultStack());
 			entries.add(invisibleTieItem.getDefaultStack());
 			entries.add(TRACK.getDefaultStack());
 			entries.add(CHAIN_TRACK.getDefaultStack());
-			entries.add(FRICTIONLESS_TRACK.getDefaultStack());
-			entries.add(ANTIGRAVITY_TRACK.getDefaultStack());
 			entries.add(STATION_TRACK.getDefaultStack());
 		});
 	}
 
 	public static LoreComponent lore(Text lore) {
 		return new LoreComponent(List.of(lore));
+	}
+
+	public static LoreComponent lore(Text lore, Text lore2) {
+		return new LoreComponent(List.of(lore, lore2));
 	}
 
 	public static Identifier id(String path) {

@@ -25,6 +25,7 @@ public class TrackItem extends Item {
     public TrackItem(Settings settings, Type type) {
         super(settings.component(DataComponentTypes.LORE,
                 new LoreComponent(List.of(
+                        Text.translatable("item.forkcart.track.desc").formatted(Formatting.GRAY),
                         Text.translatable("item.forkcart.track." +type.name().toLowerCase(Locale.ROOT) +".desc")
                                 .formatted(Formatting.GRAY)))
         ));
@@ -90,8 +91,6 @@ public class TrackItem extends Item {
 
         STANDARD,
         CHAIN,
-        FRICTIONLESS,
-        ANTIGRAVITY,
         STATION
 
     }

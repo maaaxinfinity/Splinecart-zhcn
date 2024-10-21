@@ -1,16 +1,12 @@
 package io.github.implicitsaber.forkcart.block;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.implicitsaber.forkcart.Forkcart;
 import io.github.implicitsaber.forkcart.util.Pose;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FacingBlock;
-import net.minecraft.block.ShapeContext;
+import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
@@ -36,6 +32,7 @@ public class TrackTiesBlock extends FacingBlock implements BlockEntityProvider {
     public static final MapCodec<TrackTiesBlock> CODEC = createCodec(TrackTiesBlock::new);
     public static final IntProperty POINTING = IntProperty.of("pointing", 0, 3);
     public static final Map<Direction, Map<Direction, Integer>> POINTING_MAP = new HashMap<>();
+    public static final VoxelShape[] SHAPES = new VoxelShape[Direction.values().length];
 
     static {
         Map<Direction, Integer> upMap = new HashMap<>();
@@ -74,13 +71,42 @@ public class TrackTiesBlock extends FacingBlock implements BlockEntityProvider {
         POINTING_MAP.put(Direction.EAST, eastMap);
         POINTING_MAP.put(Direction.SOUTH, southMap);
         POINTING_MAP.put(Direction.WEST, westMap);
-    }
 
-    public static final VoxelShape[] SHAPES = new VoxelShape[Direction.values().length];
+        for (var dir : Direction.values()) {
+            int idx = dir.ordinal();
+            var min = new Vector3d(-8, -8, -8);
+            var max = new Vector3d(8, -6, 8);
+
+            var rot = dir.getRotationQuaternion();
+            rot.transform(min);
+            rot.transform(max);
+
+            min.add(8, 8, 8);
+            max.add(8, 8, 8);
+
+            SHAPES[idx] = createCuboidShape(
+                    Math.min(min.x(), max.x()),
+                    Math.min(min.y(), max.y()),
+                    Math.min(min.z(), max.z()),
+                    Math.max(min.x(), max.x()),
+                    Math.max(min.y(), max.y()),
+                    Math.max(min.z(), max.z()));
+        }
+    }
 
     public TrackTiesBlock(Settings settings) {
         super(settings);
         setDefaultState(getDefaultState().with(FACING, Direction.UP).with(POINTING, 0));
+    }
+
+    @Override
+    protected boolean hasComparatorOutput(BlockState state) {
+        return true;
+    }
+
+    @Override
+    protected int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        return world.getBlockEntity(pos) instanceof TrackTiesBlockEntity ttBE ? (ttBE.hasCart() ? 15 : 0) : 0;
     }
 
     @Override
@@ -92,10 +118,11 @@ public class TrackTiesBlock extends FacingBlock implements BlockEntityProvider {
     @Nullable
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
-        Map<Direction, Integer> pMap = POINTING_MAP.getOrDefault(ctx.getSide(), Map.of());
+        Direction side = canBeNotUpright() ? ctx.getSide() : Direction.UP;
+        Map<Direction, Integer> pMap = POINTING_MAP.getOrDefault(side, Map.of());
         Direction hLook = ctx.getHorizontalPlayerFacing();
         int pointing = pMap.containsKey(hLook) ? pMap.get(hLook) : pMap.getOrDefault(ctx.getVerticalPlayerLookDirection(), 0);
-        return getDefaultState().with(FACING, ctx.getSide()).with(POINTING, pointing);
+        return getDefaultState().with(FACING, side).with(POINTING, pointing);
     }
 
     @Override
@@ -179,27 +206,17 @@ public class TrackTiesBlock extends FacingBlock implements BlockEntityProvider {
         return new TrackTiesBlockEntity(pos, state);
     }
 
-    static {
-        for (var dir : Direction.values()) {
-            int idx = dir.ordinal();
-            var min = new Vector3d(-8, -8, -8);
-            var max = new Vector3d(8, -6, 8);
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+       if(type == Forkcart.TRACK_TIES_BE) {
+           return TrackTiesBlockEntity::staticTick;
+       }
+       return null;
+    }
 
-            var rot = dir.getRotationQuaternion();
-            rot.transform(min);
-            rot.transform(max);
-
-            min.add(8, 8, 8);
-            max.add(8, 8, 8);
-
-            SHAPES[idx] = createCuboidShape(
-                    Math.min(min.x(), max.x()),
-                    Math.min(min.y(), max.y()),
-                    Math.min(min.z(), max.z()),
-                    Math.max(min.x(), max.x()),
-                    Math.max(min.y(), max.y()),
-                    Math.max(min.z(), max.z()));
-        }
+    public boolean canBeNotUpright() {
+        return true;
     }
 
 }

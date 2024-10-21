@@ -26,6 +26,7 @@ public class TrackTiesBlockEntity extends BlockEntity {
     private BlockPos prev;
     private Pose pose;
     private TrackItem.Type trackType;
+    private int hasCartTicks = 0;
 
     public TrackTiesBlockEntity(BlockPos pos, BlockState state) {
         super(Forkcart.TRACK_TIES_BE, pos, state);
@@ -38,6 +39,13 @@ public class TrackTiesBlockEntity extends BlockEntity {
             this.pose = ties.getPose(state, pos);
         } else {
             this.pose = new Pose(new Vector3d(), new Matrix3d().identity());
+        }
+    }
+
+    private void tick(World world, BlockPos pos, BlockState state) {
+        if(hasCartTicks > 0) {
+            hasCartTicks--;
+            if(hasCartTicks == 0) world.updateComparators(pos, state.getBlock());
         }
     }
 
@@ -61,8 +69,6 @@ public class TrackTiesBlockEntity extends BlockEntity {
         var item = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(switch(trackType) {
             case STANDARD -> Forkcart.TRACK;
             case CHAIN -> Forkcart.CHAIN_TRACK;
-            case FRICTIONLESS -> Forkcart.FRICTIONLESS_TRACK;
-            case ANTIGRAVITY -> Forkcart.ANTIGRAVITY_TRACK;
             case STATION -> Forkcart.STATION_TRACK;
         }));
 
@@ -70,10 +76,10 @@ public class TrackTiesBlockEntity extends BlockEntity {
     }
 
     public void setNext(@Nullable BlockPos pos, @Nullable TrackItem.Type trackType) {
+        if(this.next != null) this.dropTrack(this.trackType);
         if (pos == null) {
             var oldNextE = next();
             this.next = null;
-            this.dropTrack(this.trackType);
             this.trackType = TrackItem.Type.STANDARD;
             if (oldNextE != null) {
                 oldNextE.prev = null;
@@ -82,7 +88,6 @@ public class TrackTiesBlockEntity extends BlockEntity {
             }
         } else {
             this.next = pos;
-            this.dropTrack(this.trackType);
             var nextE = next();
             if (nextE != null) {
                 nextE.prev = getPos();
@@ -176,6 +181,22 @@ public class TrackTiesBlockEntity extends BlockEntity {
 
     public TrackItem.Type getTrackType() {
         return trackType;
+    }
+
+    public static void staticTick(World world, BlockPos pos, BlockState state, BlockEntity be) {
+        if(be instanceof TrackTiesBlockEntity ttBE) ttBE.tick(world, pos, state);
+    }
+
+    public boolean hasCart() {
+        return hasCartTicks > 0;
+    }
+
+    public void markHasCart() {
+        boolean didNotHaveCart = !hasCart();
+        hasCartTicks = 2;
+        if(didNotHaveCart && world != null) {
+            world.updateComparators(pos, getCachedState().getBlock());
+        }
     }
 
 }

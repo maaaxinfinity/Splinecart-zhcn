@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "forkcart:item/antigravity_track"
+    "layer0": "forkcart:block/switch_ties_on"
   }
 }

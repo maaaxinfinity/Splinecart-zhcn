@@ -1,10 +1,12 @@
 package io.github.implicitsaber.forkcart.entity;
 
 import io.github.implicitsaber.forkcart.Forkcart;
+import io.github.implicitsaber.forkcart.block.SwitchTiesBlock;
 import io.github.implicitsaber.forkcart.block.TrackTiesBlockEntity;
 import io.github.implicitsaber.forkcart.item.TrackItem;
 import io.github.implicitsaber.forkcart.util.Pose;
 import io.github.implicitsaber.forkcart.util.SUtil;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -15,7 +17,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3d;
 import org.joml.Matrix3dc;
 import org.joml.Quaternionf;
@@ -26,7 +30,6 @@ public class TrackFollowerEntity extends Entity {
     private static final double MAX_SPEED = 1.28;
     private static final double MAX_ENERGY = 2.45;
     private static final double FRICTION = 0.986;
-    private static final double MILD_FRICTION = 0.99;
 
     private BlockPos startTie;
     private BlockPos endTie;
@@ -178,6 +181,8 @@ public class TrackFollowerEntity extends Entity {
                     return;
                 }
 
+                startE.markHasCart();
+
                 double velocity = Math.min(this.trackVelocity, MAX_SPEED);
                 this.splinePieceProgress += velocity * this.motionScale;
                 if (this.splinePieceProgress > 1) {
@@ -185,13 +190,16 @@ public class TrackFollowerEntity extends Entity {
 
                     var nextE = endE.next();
                     if (nextE == null) {
-                        passenger.stopRiding();
-
-                        var newVel = new Vector3d(0, 0, this.trackVelocity).mul(this.basis);
-                        passenger.setVelocity(newVel.x(), newVel.y(), newVel.z());
-                        this.destroy();
+                        fullDismount(passenger, null);
                         return;
                     } else {
+                        if(endE.getCachedState().isOf(Forkcart.SWITCH_TIES)) {
+                            boolean switched = endE.getCachedState().get(SwitchTiesBlock.SWITCHED);
+                            if(switched) {
+                                fullDismount(passenger, endE.getCachedState());
+                                return;
+                            }
+                        }
                         this.setStretch(this.endTie, nextE.getPos());
                         startE = endE;
                         endE = nextE;
@@ -222,20 +230,12 @@ public class TrackFollowerEntity extends Entity {
                 this.dataTracker.set(CHAIN_LIFTING, trackType == TrackItem.Type.CHAIN);
                 switch(trackType) {
                     case CHAIN -> this.trackVelocity = 0.05;
-                    case STATION -> this.trackVelocity = world.getReceivedRedstonePower(startTie) > 0 ? 0.05 : 0;
+                    case STATION -> this.trackVelocity = world.isReceivingRedstonePower(startTie) ? 0.05 : 0;
                     default -> {
-                        if (this.trackVelocity > COMFORTABLE_SPEED && trackType != TrackItem.Type.FRICTIONLESS) {
+                        if (this.trackVelocity > COMFORTABLE_SPEED) {
                             double diff = this.trackVelocity - COMFORTABLE_SPEED;
                             diff *= FRICTION;
                             this.trackVelocity = COMFORTABLE_SPEED + diff;
-                        } else if(trackType != TrackItem.Type.ANTIGRAVITY) {
-                            if(trackType != TrackItem.Type.FRICTIONLESS) this.trackVelocity *= MILD_FRICTION;
-                            Vector3d rPos = new Vector3d();
-                            Vector3d rGrad = new Vector3d();
-                            startE.pose().interpolate(startE.pose(), 1 - this.splinePieceProgress, rPos, this.basis, rGrad);
-                            double rGravity = (getY() - rPos.y()) * 0.047;
-                            this.trackVelocity -= rGravity;
-                            if (this.trackVelocity < 0) this.trackVelocity = 0;
                         }
                     }
                 }
@@ -245,6 +245,20 @@ public class TrackFollowerEntity extends Entity {
                 this.destroy();
             }
         }
+    }
+
+    private void fullDismount(Entity passenger, @Nullable BlockState switchTies) {
+        passenger.stopRiding();
+        if(switchTies != null) {
+            Vec3i newVel = SwitchTiesBlock.VELOCITY_MAP.getOrDefault(switchTies.get(SwitchTiesBlock.POINTING), Vec3i.ZERO);
+            passenger.setVelocity(newVel.getX(), newVel.getY(), newVel.getZ());
+            Vec3d startPos = passenger.getPos().add(Vec3d.of(newVel));
+            passenger.setPos(startPos.x, startPos.y, startPos.z);
+        } else {
+            Vector3d newVel = new Vector3d(0, 0, this.trackVelocity).mul(this.basis);
+            passenger.setVelocity(newVel.x(), newVel.y(), newVel.z());
+        }
+        this.destroy();
     }
 
     @Override
@@ -287,9 +301,6 @@ public class TrackFollowerEntity extends Entity {
                 this.lastClientOrientation.set(this.clientOrientation);
             }
             this.oriInterpSteps = this.getType().getTrackTickInterval() + 2;
-        }
-        if(data.equals(CHAIN_LIFTING)) {
-
         }
     }
 

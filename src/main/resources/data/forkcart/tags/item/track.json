@@ -2,8 +2,6 @@
   "values": [
     "forkcart:track",
     "forkcart:chain_track",
-    "forkcart:frictionless_track",
-    "forkcart:antigravity_track",
     "forkcart:station_track"
   ]
 }

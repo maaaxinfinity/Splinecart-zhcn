@@ -140,8 +140,6 @@ public class TrackTiesBlockEntityRenderer implements BlockEntityRenderer<TrackTi
         return switch(be.getTrackType()) {
             case STANDARD -> TRACK_TEXTURE;
             case CHAIN -> CHAIN_TRACK_TEXTURE;
-            case FRICTIONLESS -> FRICTIONLESS_TRACK_TEXTURE;
-            case ANTIGRAVITY -> ANTIGRAVITY_TRACK_TEXTURE;
             case STATION -> STATION_TRACK_TEXTURE;
         };
     }
