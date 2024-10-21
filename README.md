@@ -1,5 +1,27 @@
 # Forkcart
-A fork of the Splinecart mod, which was developed by FoundationGames. This fork was created to add new features to the mod and to port it to more versions.
+A fork of the [Splinecart mod](https://github.com/FoundationGames/Splinecart), which was developed by FoundationGames. This fork was created to add new features to the mod and to port it to more versions.
+## Features
+Every feature present in the original mod should be here too. However, this mod has a few features not present in the original:
+1. New track types such as chainlift and station track
+2. New types of track ties such as invisible ties and switch ties
+3. Comparator output from track ties when a cart is on the upcoming segment
+4. Track ties face the direction you are facing when placed
+5. Some random bugfixes
+## Versions
+Currently, only Minecraft version 1.21 is supported, however more version support is planned.
+## Installation
+Currently, the mod can only be obtained from our [releases page](https://github.com/ImplicitSaber/Forkcart/releases).
+## How To
+This is a basic tutorial on using the mod. If you already know how to use the original mod, skip to the New Features subsection.
+### Basic Features
+1. To start, place a track tie. Then, place a second track tie where you want your track section to go. You can rotate track ties by right-clicking them.
+2. Grab a track item and click the first tie and then the second tie. There are arrows on the ties, ensure that they face the direction the cart is supposed to go.
+3. Continue connecting track ties. Remember that ties can be placed on ANY side of a block, even sideways or upside down.
+### New Features
+- Chain Track can be used as a replacement for regular track to connect two track ties. It will pull carts along the track segment.
+- Station Track will pull carts along the track segment if and only if the first tie of the segment is powered.
+- Invisible Ties are invisible when placed unless the item is held.
+- Switch Ties will push a cart off onto a rail to the right if powered. Otherwise they let it continue to the next segment.
 ## License
 This mod is licensed under the MIT license. This mod is a fork of Splinecart, also licensed under the MIT license:
 ```
@@ -21,3 +43,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+I am not affiliated with the original creator of Splinecart. This fork is only possible because of the open license of the original mod. Please do not report issues with this mod to the issue tracker of the original mod, instead report them [here](https://github.com/ImplicitSaber/Forkcart/issues).
